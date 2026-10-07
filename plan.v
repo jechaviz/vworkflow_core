@@ -131,8 +131,8 @@ pub fn region_by_id(spec Spec, id string) ?Region {
 }
 
 fn gate_for_step(gates Gates, step Step, cap StepCapability) string {
-	if cap.requires_confirmation || cap.risk in ['high', 'critical'] {
-		return if gates.require_confirmation { 'confirmation' } else { 'policy_required' }
+	if cap.requires_confirmation && gates.require_confirmation {
+		return 'confirmation'
 	}
 	if step.kind == 'observe' && !gates.allow_foreground {
 		return 'background_only'
