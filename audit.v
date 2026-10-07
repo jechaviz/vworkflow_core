@@ -19,9 +19,6 @@ pub fn validate(spec Spec) []string {
 	if spec.name.trim_space() == '' {
 		issues << 'flow name is required'
 	}
-	if spec.targets.len == 0 {
-		issues << 'at least one target is required'
-	}
 	if spec.steps.len == 0 {
 		issues << 'at least one step is required'
 	}
@@ -64,9 +61,6 @@ pub fn validate(spec Spec) []string {
 		} else {
 			step_ids[step.id] = true
 		}
-		if step.kind !in allowed_step_kinds {
-			issues << 'step ${step.id} has unsupported kind ${step.kind}'
-		}
 		if step.region.trim_space() != '' && step.region !in regions {
 			issues << 'step ${step.id} references unknown region ${step.region}'
 		}
@@ -79,16 +73,16 @@ pub fn validate(spec Spec) []string {
 
 pub fn warnings(spec Spec) []string {
 	mut out := []string{}
-	if spec.gates.disclaimer.trim_space() == '' {
-		out << 'disclaimer text is empty'
-	}
 	for step in spec.steps {
 		if !step.enabled {
 			continue
 		}
 		cap := capability_for_step(step)
+		if step.kind !in allowed_step_kinds {
+			out << 'step ${step.id} uses extension kind ${step.kind}'
+		}
 		if cap.requires_confirmation && !spec.gates.require_confirmation {
-			out << 'step ${step.id} requires external policy approval'
+			out << 'step ${step.id} confirmation contract is running in autonomous mode'
 		}
 		if cap.category == 'desktop' && !spec.gates.allow_foreground {
 			out << 'step ${step.id} may require foreground access'
