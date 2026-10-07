@@ -17,7 +17,7 @@ pub fn parse(root map[string]vyaml.Node) !Spec {
 		mode: first_nonempty(map_string(root, 'mode'), 'debug')
 		cadence_ms: map_int(root, 'cadence_ms', 5000)
 		output_dir: first_nonempty(map_string(root, 'output_dir'), 'out/workflow')
-		adapters: parse_string_array(root['adapters'] or { vyaml.Node('') })
+		adapters: parse_adapters(root['adapters'] or { vyaml.Node('') })
 		targets: parse_targets(root['targets'] or { vyaml.Node('') })
 		regions: parse_regions(root['regions'] or { vyaml.Node('') })
 		steps: parse_steps(root['steps'] or { vyaml.Node('') })
@@ -40,7 +40,7 @@ fn parse_targets(raw vyaml.Node) []Target {
 			title: map_string(m, 'title')
 			process: map_string(m, 'process')
 			url: map_string(m, 'url')
-			handle: map_string(m, 'handle')
+			handle: first_nonempty(map_string(m, 'handle'), map_string(m, 'hwnd'))
 		}
 	}
 	return out
@@ -104,6 +104,17 @@ fn parse_rect(raw vyaml.Node) vdirty_regions.Rect {
 		w: map_int(m, 'w', map_int(m, 'width', 0))
 		h: map_int(m, 'h', map_int(m, 'height', 0))
 	}
+}
+
+fn parse_adapters(raw vyaml.Node) []string {
+	mut out := parse_string_array(raw)
+	for key, value in vyaml.as_map(raw) {
+		if vyaml.as_bool(value, false) && key.trim_space() != '' && key !in out {
+			out << key.trim_space()
+		}
+	}
+	out.sort()
+	return out
 }
 
 fn parse_string_array(raw vyaml.Node) []string {
