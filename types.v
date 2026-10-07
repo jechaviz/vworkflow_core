@@ -43,13 +43,13 @@ pub:
 
 pub struct Gates {
 pub:
-	require_confirmation bool = true
-	allow_mouse          bool
-	allow_keyboard       bool
-	allow_submit         bool
-	allow_external_send  bool
-	allow_destructive    bool
-	allow_foreground     bool
+	require_confirmation bool
+	allow_mouse          bool = true
+	allow_keyboard       bool = true
+	allow_submit         bool = true
+	allow_external_send  bool = true
+	allow_destructive    bool = true
+	allow_foreground     bool = true
 	disclaimer           string
 }
 
