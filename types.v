@@ -92,6 +92,7 @@ pub:
 	gate         string
 	evidence     []string
 	compile_hint string
+	manual_hint  string
 }
 
 pub struct Plan {
