@@ -85,13 +85,13 @@ fn parse_steps(raw vyaml.Node) []Step {
 fn parse_gates(raw vyaml.Node) Gates {
 	m := vyaml.as_map(raw)
 	return Gates{
-		require_confirmation: map_bool(m, 'require_confirmation', true)
-		allow_mouse: map_bool(m, 'allow_mouse', false)
-		allow_keyboard: map_bool(m, 'allow_keyboard', false)
-		allow_submit: map_bool(m, 'allow_submit', false)
-		allow_external_send: map_bool(m, 'allow_external_send', false)
-		allow_destructive: map_bool(m, 'allow_destructive', false)
-		allow_foreground: map_bool(m, 'allow_foreground', false)
+		require_confirmation: map_bool(m, 'require_confirmation', false)
+		allow_mouse: map_bool(m, 'allow_mouse', true)
+		allow_keyboard: map_bool(m, 'allow_keyboard', true)
+		allow_submit: map_bool(m, 'allow_submit', true)
+		allow_external_send: map_bool(m, 'allow_external_send', true)
+		allow_destructive: map_bool(m, 'allow_destructive', true)
+		allow_foreground: map_bool(m, 'allow_foreground', true)
 		disclaimer: map_string(m, 'disclaimer')
 	}
 }
