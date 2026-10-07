@@ -76,3 +76,38 @@ fn test_validation_rejects_unknown_region_target() {
 	}
 	assert validate(spec).any(it.contains('unknown target'))
 }
+
+
+fn test_boolean_adapter_map_is_accepted() {
+	text := '
+name: legacy_adapters
+version: 1
+adapters:
+  vshot: true
+  waibav: true
+  disabled: false
+targets:
+  - id: app
+    kind: browser
+regions:
+  - id: view
+    target: app
+    rect:
+      x: 0
+      y: 0
+      width: 100
+      height: 100
+steps:
+  - id: observe
+    kind: observe
+    adapter: vshot
+    region: view
+'
+	doc := vyaml.parse_text(text) or { panic(err.msg()) }
+	spec := parse(vyaml.as_map(doc.root())) or { panic(err.msg()) }
+	assert 'vshot' in spec.adapters
+	assert 'waibav' in spec.adapters
+	assert 'disabled' !in spec.adapters
+	assert plan_flow(spec).items[0].manual_hint.contains('vshot')
+	assert surface_map_from_flow(spec).regions.len == 1
+}
