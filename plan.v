@@ -22,7 +22,8 @@ pub fn plan(spec Spec) Plan {
 			risk: cap.risk
 			gate: gate_for_step(spec.gates, step, cap)
 			evidence: cap.evidence
-			compile_hint: compile_hint(step, cap)
+			compile_hint: compile_hint(spec, step, cap)
+			manual_hint: manual_hint(spec, step, cap)
 		}
 	}
 	return Plan{
@@ -39,10 +40,11 @@ pub fn plan(spec Spec) Plan {
 
 pub fn capability_for_step(step Step) StepCapability {
 	action := first_nonempty(step.action, default_action_for_kind(step.kind))
-	if step.kind == 'observe' && action == 'Capture.Region' {
+	adapter := effective_adapter(step)
+	if step.kind == 'observe' || adapter in ['capture', 'vshot'] {
 		return StepCapability{
 			action: action
-			adapter: effective_adapter(step)
+			adapter: adapter
 			category: 'capture'
 			risk: 'low'
 			effects: ['read']
@@ -138,9 +140,23 @@ fn gate_for_step(gates Gates, step Step, cap StepCapability) string {
 	return 'open'
 }
 
-fn compile_hint(step Step, cap StepCapability) string {
+fn compile_hint(spec Spec, step Step, cap StepCapability) string {
 	adapter := effective_adapter(step)
+	if step.region.trim_space() != '' {
+		region := region_by_id(spec, step.region) or { return '${adapter}:${cap.action}' }
+		return '${adapter}:${cap.action} rect=${region.rect.x},${region.rect.y},${region.rect.w},${region.rect.h}'
+	}
 	return '${adapter}:${cap.action}'
+}
+
+fn manual_hint(spec Spec, step Step, cap StepCapability) string {
+	adapter := effective_adapter(step)
+	if adapter == 'vshot' && step.region.trim_space() != '' {
+		region := region_by_id(spec, step.region) or { return '' }
+		out := '${spec.output_dir}/${spec.name}/${region.id}.png'
+		return 'v run vshot -- capture --x ${region.rect.x} --y ${region.rect.y} --width ${region.rect.w} --height ${region.rect.h} --out ${out}'
+	}
+	return ''
 }
 
 fn risk_from_string(value string) vaction_contracts.Risk {
